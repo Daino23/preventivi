@@ -12,6 +12,7 @@ LOGO_FILE = "logo.png"
 
 st.set_page_config(page_title="Preventivo Studio Dainotti Avanzato")
 st.title("Preventivo Studio Dainotti - Con Gestione Servizi Personalizzati")
+st.caption(f"Oggi è il {datetime.today().strftime('%d/%m/%Y')}")
 
 # === CARICAMENTO SERVIZI PREIMPOSTATI ===
 if os.path.exists(SERVIZI_FILE):
@@ -62,6 +63,17 @@ with st.form("form_voci"):
             "prezzo_reale": prezzo_reale,
             "prezzo_applicato": prezzo_applicato
         })
+        st.experimental_rerun()
+
+# === PREVIEW DEI SERVIZI INSERITI ===
+st.subheader("Anteprima Servizi Inseriti")
+if len(st.session_state.lista_voci) == 0:
+    st.info("Nessun servizio ancora inserito nel preventivo.")
+else:
+    for idx, voce in enumerate(st.session_state.lista_voci, start=1):
+        with st.expander(f"{idx}. {voce['voce']}"):
+            st.markdown(f"**Descrizione:** {voce['descrizione']}")
+            st.markdown(f"Prezzo reale: €{voce['prezzo_reale']:.2f} | Prezzo applicato: €{voce['prezzo_applicato']:.2f}")
 
 # === MODULO PER AGGIUNGERE NUOVI SERVIZI AL DATABASE ===
 st.subheader("Crea un nuovo servizio personalizzato")
