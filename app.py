@@ -1,4 +1,3 @@
-
 import streamlit as st
 from docx import Document
 from datetime import datetime
@@ -43,13 +42,13 @@ with st.form("form_voci"):
     voce = st.text_input("Voce", value=selezionato if selezionato else "")
     if selezionato:
         descrizione_default = servizi_preimpostati[selezionato]["descrizione"]
-        prezzo_reale_default = servizi_preimpostati[selezionato]["prezzo_reale"]
-        prezzo_applicato_default = servizi_preimpostati[selezionato]["prezzo_applicato"]
+        prezzo_reale_default = float(servizi_preimpostati[selezionato]["prezzo_reale"])
+        prezzo_applicato_default = float(servizi_preimpostati[selezionato]["prezzo_applicato"])
     else:
         descrizione_default, prezzo_reale_default, prezzo_applicato_default = "", 0.0, 0.0
     descrizione = st.text_area("Descrizione", value=descrizione_default)
-    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, value=prezzo_reale_default)
-    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=prezzo_applicato_default)
+    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, value=float(prezzo_reale_default))
+    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=float(prezzo_applicato_default))
     aggiungi = st.form_submit_button("Aggiungi voce")
 
 if "lista_voci" not in st.session_state:
@@ -156,7 +155,7 @@ if st.button("Genera Preventivo Word"):
     file_name = f"Preventivo_{cliente.replace(' ', '_')}_{data.strftime('%d-%m-%Y')}.docx"
 
     st.download_button(
-        label="📄 Scarica Preventivo Word",
+        label="\ud83d\udcc4 Scarica Preventivo Word",
         data=buffer,
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
