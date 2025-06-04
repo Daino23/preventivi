@@ -1,0 +1,52 @@
+{
+    "Analisi di mercato": {
+        "descrizione": "Studio del settore, target e competitor con report dettagliato.",
+        "prezzo_reale": 1000,
+        "prezzo_applicato": 800
+    },
+    "Piano di marketing strategico": {
+        "descrizione": "Definizione di obiettivi, target, canali, budget e KPI.",
+        "prezzo_reale": 1200,
+        "prezzo_applicato": 950
+    },
+    "Consulenza comunicazione aziendale": {
+        "descrizione": "Analisi e sviluppo della comunicazione interna ed esterna.",
+        "prezzo_reale": 1000,
+        "prezzo_applicato": 850
+    },
+    "Gestione social media (mensile)": {
+        "descrizione": "Creazione piano editoriale, grafiche, pubblicazioni e report mensile (fino a 3 canali).",
+        "prezzo_reale": 600,
+        "prezzo_applicato": 500
+    },
+    "Facebook & Instagram Ads (setup e 1 mese gestione)": {
+        "descrizione": "Impostazione campagne, target, creatività e gestione per 30 giorni.",
+        "prezzo_reale": 700,
+        "prezzo_applicato": 550
+    },
+    "Google Ads (setup + gestione primo mese)": {
+        "descrizione": "Impostazione campagne Search e/o Display, monitoraggio e ottimizzazione.",
+        "prezzo_reale": 800,
+        "prezzo_applicato": 600
+    },
+    "Sito vetrina WordPress (fino a 5 pagine)": {
+        "descrizione": "Design personalizzato, layout responsive, contatti e form inclusi.",
+        "prezzo_reale": 1500,
+        "prezzo_applicato": 1200
+    },
+    "Landing page ottimizzata per campagne": {
+        "descrizione": "Pagina singola con copy persuasivo, form e tracciamenti per conversione.",
+        "prezzo_reale": 800,
+        "prezzo_applicato": 650
+    },
+    "E-commerce base WordPress (WooCommerce)": {
+        "descrizione": "Installazione, configurazione prodotti, pagamenti e spedizioni (fino a 10 prodotti).",
+        "prezzo_reale": 2000,
+        "prezzo_applicato": 1600
+    },
+    "Manutenzione sito web (annuale)": {
+        "descrizione": "Backup, aggiornamenti e assistenza tecnica di base per 12 mesi.",
+        "prezzo_reale": 500,
+        "prezzo_applicato": 400
+    }
+}

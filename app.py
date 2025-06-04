@@ -1,31 +1,55 @@
+
 import streamlit as st
 from docx import Document
 from datetime import datetime
 from io import BytesIO
 from docx.shared import Inches
+import json
+import os
+
+# === CONFIG ===
+SERVIZI_FILE = "servizi.json"
+LOGO_FILE = "logo.png"
 
 st.set_page_config(page_title="Preventivo Studio Dainotti Avanzato")
-st.title("Preventivo Studio Dainotti - Versione Avanzata")
+st.title("Preventivo Studio Dainotti - Con Gestione Servizi Personalizzati")
 
-# Logo
-st.sidebar.image("https://i.ibb.co/nb6JqGC/logo-studiodainotti.png", width=150)
+# === CARICAMENTO SERVIZI PREIMPOSTATI ===
+if os.path.exists(SERVIZI_FILE):
+    with open(SERVIZI_FILE, "r", encoding="utf-8") as f:
+        servizi_preimpostati = json.load(f)
+else:
+    servizi_preimpostati = {}
 
-# Intestazione
+# === LOGO ===
+if os.path.exists(LOGO_FILE):
+    st.sidebar.image(LOGO_FILE, width=150)
+
+# === INTESTAZIONE ===
 st.subheader("Dati intestazione")
 data = st.date_input("Data", value=datetime.today())
 numero = st.text_input("Numero preventivo", "88")
-cliente = st.text_input("Cliente", "Gianfranco Consiglio")
-oggetto = st.text_area("Oggetto", "Servizi strategici per il lancio e la promozione di due prodotti – Analisi + Funnel + Landing + Ads")
+cliente = st.text_input("Cliente", "Mario Rossi")
+oggetto = st.text_area("Oggetto", "Consulenza e sviluppo personalizzato")
 includi_iva = st.checkbox("Includi IVA (22%)", value=True)
 
-# Voci
-st.subheader("Voci di preventivo")
+# === SELEZIONE SERVIZIO ===
+st.subheader("Servizi disponibili")
+selezionato = st.selectbox("Scegli un servizio preimpostato o lascia vuoto per uno nuovo", [""] + list(servizi_preimpostati.keys()))
+
+# === AGGIUNGI SERVIZIO A PREVENTIVO ===
+st.subheader("Aggiungi un servizio al preventivo")
 with st.form("form_voci"):
-    voce = st.text_input("Voce")
-    frequenza = st.text_input("Frequenza")
-    descrizione = st.text_area("Descrizione")
-    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0)
-    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0)
+    voce = st.text_input("Voce", value=selezionato if selezionato else "")
+    if selezionato:
+        descrizione_default = servizi_preimpostati[selezionato]["descrizione"]
+        prezzo_reale_default = servizi_preimpostati[selezionato]["prezzo_reale"]
+        prezzo_applicato_default = servizi_preimpostati[selezionato]["prezzo_applicato"]
+    else:
+        descrizione_default, prezzo_reale_default, prezzo_applicato_default = "", 0.0, 0.0
+    descrizione = st.text_area("Descrizione", value=descrizione_default)
+    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, value=prezzo_reale_default)
+    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=prezzo_applicato_default)
     aggiungi = st.form_submit_button("Aggiungi voce")
 
 if "lista_voci" not in st.session_state:
@@ -34,35 +58,45 @@ if "lista_voci" not in st.session_state:
 if aggiungi:
     st.session_state.lista_voci.append({
         "voce": voce,
-        "frequenza": frequenza,
+        "frequenza": "Una tantum",
         "descrizione": descrizione,
         "prezzo_reale": prezzo_reale,
         "prezzo_applicato": prezzo_applicato
     })
 
-for riga in st.session_state.lista_voci:
-    st.markdown(f"**{riga['voce']}** - {riga['frequenza']} - {riga['descrizione']}")
-    st.markdown(f"Prezzo reale: €{riga['prezzo_reale']} | Prezzo applicato: €{riga['prezzo_applicato']}")
+# === MODULO PER AGGIUNGERE NUOVI SERVIZI AL DATABASE ===
+st.subheader("Crea un nuovo servizio personalizzato")
+with st.form("aggiungi_servizio"):
+    nuovo_nome = st.text_input("Nome del servizio")
+    nuova_descrizione = st.text_area("Descrizione servizio")
+    nuovo_prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, step=10.0)
+    nuovo_prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, step=10.0)
+    salva_servizio = st.form_submit_button("Salva nel database")
 
-# Generazione documento
+    if salva_servizio:
+        if nuovo_nome in servizi_preimpostati:
+            st.warning("Questo servizio esiste già.")
+        else:
+            servizi_preimpostati[nuovo_nome] = {
+                "descrizione": nuova_descrizione,
+                "prezzo_reale": nuovo_prezzo_reale,
+                "prezzo_applicato": nuovo_prezzo_applicato
+            }
+            with open(SERVIZI_FILE, "w", encoding="utf-8") as f:
+                json.dump(servizi_preimpostati, f, indent=4)
+            st.success("Servizio aggiunto con successo!")
+
+# === GENERAZIONE DOCUMENTO ===
 st.subheader("Generazione documento")
-
 firma_finale = st.text_area("Testo firma finale", "Cordiali saluti,\nAndrea Dainotti\nStudio Dainotti")
 
-if st.button("Genera Preventivo Word e PDF"):
+if st.button("Genera Preventivo Word"):
     doc = Document()
-
-    # Logo
-    header = doc.sections[0].header
-    try:
-        from urllib.request import urlopen
-        import tempfile
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            tmpfile.write(urlopen("https://i.ibb.co/nb6JqGC/logo-studiodainotti.png").read())
-            tmpfile.flush()
-            doc.add_picture(tmpfile.name, width=Inches(1.5))
-    except:
-        pass
+    if os.path.exists(LOGO_FILE):
+        try:
+            doc.add_picture(LOGO_FILE, width=Inches(1.5))
+        except:
+            doc.add_paragraph("[Logo non inseribile]")
 
     doc.add_heading("Preventivo – Analisi e Strategia Marketing", level=1)
     doc.add_paragraph("Studio Dainotti")
