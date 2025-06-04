@@ -38,6 +38,9 @@ selezionato = st.selectbox("Scegli un servizio preimpostato o lascia vuoto per u
 
 # === AGGIUNGI SERVIZIO A PREVENTIVO ===
 st.subheader("Aggiungi un servizio al preventivo")
+if "lista_voci" not in st.session_state:
+    st.session_state.lista_voci = []
+
 with st.form("form_voci"):
     voce = st.text_input("Voce", value=selezionato if selezionato else "")
     if selezionato:
@@ -51,17 +54,14 @@ with st.form("form_voci"):
     prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=float(prezzo_applicato_default))
     aggiungi = st.form_submit_button("Aggiungi voce")
 
-if "lista_voci" not in st.session_state:
-    st.session_state.lista_voci = []
-
-if aggiungi:
-    st.session_state.lista_voci.append({
-        "voce": voce,
-        "frequenza": "Una tantum",
-        "descrizione": descrizione,
-        "prezzo_reale": prezzo_reale,
-        "prezzo_applicato": prezzo_applicato
-    })
+    if aggiungi:
+        st.session_state.lista_voci.append({
+            "voce": voce,
+            "frequenza": "Una tantum",
+            "descrizione": descrizione,
+            "prezzo_reale": prezzo_reale,
+            "prezzo_applicato": prezzo_applicato
+        })
 
 # === MODULO PER AGGIUNGERE NUOVI SERVIZI AL DATABASE ===
 st.subheader("Crea un nuovo servizio personalizzato")
@@ -155,7 +155,7 @@ if st.button("Genera Preventivo Word"):
     file_name = f"Preventivo_{cliente.replace(' ', '_')}_{data.strftime('%d-%m-%Y')}.docx"
 
     st.download_button(
-        label="\ud83d\udcc4 Scarica Preventivo Word",
+        label="Scarica Preventivo Word",
         data=buffer,
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
