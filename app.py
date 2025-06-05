@@ -27,8 +27,9 @@ if os.path.exists(LOGO_FILE):
 
 # === INTESTAZIONE ===
 st.subheader("Dati intestazione")
+documento_tipo = st.radio("Tipo di documento", ["Preventivo", "Fattura proforma"])
 data = st.date_input("Data", value=datetime.today())
-numero = st.text_input("Numero preventivo", "88")
+numero = st.text_input("Numero documento", "88")
 cliente = st.text_input("Cliente", "Mario Rossi")
 oggetto = st.text_area("Oggetto", "Consulenza e sviluppo personalizzato")
 includi_iva = st.checkbox("Includi IVA (22%)", value=True)
@@ -38,7 +39,7 @@ st.subheader("Servizi disponibili")
 selezionato = st.selectbox("Scegli un servizio preimpostato o lascia vuoto per uno nuovo", [""] + list(servizi_preimpostati.keys()))
 
 # === AGGIUNGI SERVIZIO A PREVENTIVO ===
-st.subheader("Aggiungi un servizio al preventivo")
+st.subheader("Aggiungi un servizio al documento")
 if "lista_voci" not in st.session_state:
     st.session_state.lista_voci = []
 
@@ -65,7 +66,7 @@ with st.form("form_voci"):
 # === PREVIEW DEI SERVIZI INSERITI ===
 st.subheader("Anteprima Servizi Inseriti")
 if not st.session_state.lista_voci:
-    st.info("Nessun servizio ancora inserito nel preventivo.")
+    st.info("Nessun servizio ancora inserito nel documento.")
 else:
     for idx, voce in enumerate(st.session_state.lista_voci, start=1):
         with st.expander(f"{idx}. {voce['voce']}"):
@@ -98,7 +99,7 @@ with st.form("aggiungi_servizio"):
 st.subheader("Generazione documento")
 firma_finale = st.text_area("Testo firma finale", "Cordiali saluti,\nAndrea Dainotti\nStudio Dainotti")
 
-if st.button("Genera Preventivo Word"):
+if st.button("Genera Documento Word"):
     doc = Document()
     if os.path.exists(LOGO_FILE):
         try:
@@ -106,9 +107,9 @@ if st.button("Genera Preventivo Word"):
         except:
             doc.add_paragraph("[Logo non inseribile]")
 
-    doc.add_heading("Preventivo – Analisi e Strategia Marketing", level=1)
+    doc.add_heading(f"{documento_tipo} – Analisi e Strategia Marketing", level=1)
     doc.add_paragraph("Studio Dainotti")
-    doc.add_paragraph(f"Preventivo n. {numero}")
+    doc.add_paragraph(f"{documento_tipo} n. {numero}")
     doc.add_paragraph(f"Data: {data.strftime('%d/%m/%Y')}")
     doc.add_paragraph(f"Cliente: {cliente}")
     doc.add_paragraph(f"Oggetto: {oggetto}")
@@ -152,8 +153,8 @@ if st.button("Genera Preventivo Word"):
     doc.add_paragraph("Pagamento: 50% alla conferma – 50% alla consegna")
     doc.add_paragraph("Modalità: Bonifico Bancario intestato a: Dainotti Srls, via Roma, 52, 21010 Porto Valtravaglia (VA)")
     doc.add_paragraph("IBAN: IT06S0538750401000003855981")
-    doc.add_paragraph(f"Causale: Preventivo n. {numero} del {data.strftime('%d/%m/%Y')}")
-    doc.add_paragraph("\nAttenzione: Il preventivo ha validità 7 giorni dalla data di emissione")
+    doc.add_paragraph(f"Causale: {documento_tipo} n. {numero} del {data.strftime('%d/%m/%Y')}")
+    doc.add_paragraph("\nAttenzione: Il documento ha validità 7 giorni dalla data di emissione")
 
     doc.add_paragraph("\n" + firma_finale)
 
@@ -161,10 +162,10 @@ if st.button("Genera Preventivo Word"):
     doc.save(buffer)
     buffer.seek(0)
 
-    file_name = f"Preventivo_{cliente.replace(' ', '_')}_{data.strftime('%d-%m-%Y')}.docx"
+    file_name = f"{documento_tipo.replace(' ', '_')}_{cliente.replace(' ', '_')}_{data.strftime('%d-%m-%Y')}.docx"
 
     st.download_button(
-        label="Scarica Preventivo Word",
+        label="Scarica Documento Word",
         data=buffer,
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
