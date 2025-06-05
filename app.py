@@ -5,8 +5,6 @@ from io import BytesIO
 from docx.shared import Inches
 import json
 import os
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 
 # === CONFIG ===
 SERVIZI_FILE = "servizi.json"
@@ -35,7 +33,6 @@ numero = st.text_input("Numero documento", "88")
 cliente = st.text_input("Cliente", "Mario Rossi")
 oggetto = st.text_area("Oggetto", "Consulenza e sviluppo personalizzato")
 includi_iva = st.checkbox("Includi IVA (22%)", value=True)
-genera_pdf = st.checkbox("Genera anche PDF")
 
 # === SELEZIONE SERVIZIO ===
 st.subheader("Servizi disponibili")
@@ -102,8 +99,7 @@ with st.form("aggiungi_servizio"):
 st.subheader("Generazione documento")
 firma_finale = st.text_area("Testo firma finale", "Cordiali saluti,\nAndrea Dainotti\nStudio Dainotti")
 
-if st.button("Genera Documento Word e PDF"):
-    # === Word ===
+if st.button("Genera Documento Word"):
     doc = Document()
     if os.path.exists(LOGO_FILE):
         try:
@@ -174,34 +170,3 @@ if st.button("Genera Documento Word e PDF"):
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-
-    if genera_pdf:
-        pdf_buffer = BytesIO()
-        p = canvas.Canvas(pdf_buffer, pagesize=A4)
-        p.setFont("Helvetica", 11)
-        text = p.beginText(40, 800)
-        text.textLine(f"{documento_tipo} n. {numero} - {data.strftime('%d/%m/%Y')}")
-        text.textLine(f"Cliente: {cliente}")
-        text.textLine(f"Oggetto: {oggetto}")
-        text.textLine("")
-        text.textLine("Dettaglio Servizi:")
-        for voce in st.session_state.lista_voci:
-            text.textLine(f"- {voce['voce']} | {voce['descrizione']} | €{voce['prezzo_applicato']:.2f}")
-        text.textLine("")
-        text.textLine(f"Totale applicato: €{totale_applicato:.2f} + IVA")
-        if includi_iva:
-            totale_ivato = totale_applicato * 1.22
-            text.textLine(f"Totale con IVA (22%): €{totale_ivato:.2f}")
-        text.textLine("")
-        for riga in firma_finale.split("\n"):
-            text.textLine(riga)
-        p.drawText(text)
-        p.showPage()
-        p.save()
-        pdf_buffer.seek(0)
-        st.download_button(
-            label="Scarica Documento PDF",
-            data=pdf_buffer,
-            file_name=file_name.replace(".docx", ".pdf"),
-            mime="application/pdf"
-        )
