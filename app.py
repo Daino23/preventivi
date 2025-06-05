@@ -5,6 +5,8 @@ from io import BytesIO
 from docx.shared import Inches
 import json
 import os
+import tempfile
+from docx2pdf import convert as docx_to_pdf
 
 # === CONFIG ===
 SERVIZI_FILE = "servizi.json"
@@ -33,6 +35,7 @@ numero = st.text_input("Numero documento", "88")
 cliente = st.text_input("Cliente", "Mario Rossi")
 oggetto = st.text_area("Oggetto", "Consulenza e sviluppo personalizzato")
 includi_iva = st.checkbox("Includi IVA (22%)", value=True)
+genera_pdf = st.checkbox("Genera anche PDF")
 
 # === SELEZIONE SERVIZIO ===
 st.subheader("Servizi disponibili")
@@ -170,3 +173,21 @@ if st.button("Genera Documento Word"):
         file_name=file_name,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+    if genera_pdf:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            docx_path = os.path.join(tmpdirname, "documento.docx")
+            pdf_path = os.path.join(tmpdirname, "documento.pdf")
+            with open(docx_path, "wb") as f:
+                f.write(buffer.getvalue())
+            try:
+                docx_to_pdf(docx_path, pdf_path)
+                with open(pdf_path, "rb") as f:
+                    st.download_button(
+                        label="Scarica Documento PDF",
+                        data=f.read(),
+                        file_name=file_name.replace(".docx", ".pdf"),
+                        mime="application/pdf"
+                    )
+            except Exception as e:
+                st.error(f"Errore nella generazione del PDF: {e}")
