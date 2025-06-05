@@ -15,10 +15,10 @@ st.title("Preventivo Studio Dainotti - Con Gestione Servizi Personalizzati")
 st.caption(f"Oggi è il {datetime.today().strftime('%d/%m/%Y')}")
 
 # === CARICAMENTO SERVIZI PREIMPOSTATI ===
-if os.path.exists(SERVIZI_FILE):
+try:
     with open(SERVIZI_FILE, "r", encoding="utf-8") as f:
         servizi_preimpostati = json.load(f)
-else:
+except Exception:
     servizi_preimpostati = {}
 
 # === LOGO ===
@@ -44,15 +44,12 @@ if "lista_voci" not in st.session_state:
 
 with st.form("form_voci"):
     voce = st.text_input("Voce", value=selezionato if selezionato else "")
-    if selezionato:
-        descrizione_default = servizi_preimpostati[selezionato]["descrizione"]
-        prezzo_reale_default = float(servizi_preimpostati[selezionato]["prezzo_reale"])
-        prezzo_applicato_default = float(servizi_preimpostati[selezionato]["prezzo_applicato"])
-    else:
-        descrizione_default, prezzo_reale_default, prezzo_applicato_default = "", 0.0, 0.0
+    descrizione_default = servizi_preimpostati.get(selezionato, {}).get("descrizione", "")
+    prezzo_reale_default = float(servizi_preimpostati.get(selezionato, {}).get("prezzo_reale", 0.0))
+    prezzo_applicato_default = float(servizi_preimpostati.get(selezionato, {}).get("prezzo_applicato", 0.0))
     descrizione = st.text_area("Descrizione", value=descrizione_default)
-    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, value=float(prezzo_reale_default))
-    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=float(prezzo_applicato_default))
+    prezzo_reale = st.number_input("Prezzo reale (€)", min_value=0.0, value=prezzo_reale_default)
+    prezzo_applicato = st.number_input("Prezzo applicato (€)", min_value=0.0, value=prezzo_applicato_default)
     aggiungi = st.form_submit_button("Aggiungi voce")
 
     if aggiungi:
@@ -63,11 +60,11 @@ with st.form("form_voci"):
             "prezzo_reale": prezzo_reale,
             "prezzo_applicato": prezzo_applicato
         })
-        st.experimental_rerun()
+        st.success("Voce aggiunta con successo.")
 
 # === PREVIEW DEI SERVIZI INSERITI ===
 st.subheader("Anteprima Servizi Inseriti")
-if len(st.session_state.lista_voci) == 0:
+if not st.session_state.lista_voci:
     st.info("Nessun servizio ancora inserito nel preventivo.")
 else:
     for idx, voce in enumerate(st.session_state.lista_voci, start=1):
